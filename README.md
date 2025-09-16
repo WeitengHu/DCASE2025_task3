@@ -70,7 +70,7 @@ Please feel free to add/remove the arguments as necessary.
 
 
 ## References and Acknowledgement
-This repository is based on the [DCASE 2025 NTU Result](https://github.com/itsjunwei/NTU_SNTL_Task3)
+This repository is based on the [DCASE 2025 Yeow NTU Result](https://github.com/itsjunwei/NTU_SNTL_Task3)
 ```
 @techreport{Yeow_NTU_task3a_report,
     Author = "Yeow, Jun-Wei and Tan, Ee-Leng and Peksi, Santi and Gan, Woon-Seng",
