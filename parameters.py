@@ -58,7 +58,7 @@ params = {
     'thresh_unify': 30,
 
     # training params
-    'nb_epochs': 5,
+    'nb_epochs': 100,
     'batch_size': 64,
     'accum_batch': 64,
     'val_batch_size': 64,
