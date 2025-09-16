@@ -68,6 +68,7 @@ python3 main.py --ms --iv --gamma --compfreq --itfm --exp "experiment_name"
 
 Please feel free to add/remove the arguments as necessary. 
 
+To compare the results of your experiments, directly run `python track_results.py`.
 
 ## References and Acknowledgement
 This repository is based on the [DCASE 2025 Yeow NTU Result](https://github.com/itsjunwei/NTU_SNTL_Task3)
