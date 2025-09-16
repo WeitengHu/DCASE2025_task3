@@ -351,14 +351,14 @@ if __name__ == '__main__':
     # parser.add_argument('--batch_size', type=int, default=64, help='Batch size to use')
     # parser.add_argument('--accum_batch', type=int, default=64, help='True batch size to use')
     # parser.add_argument('--val_batch', type=int, default=64, help='Batch size for the validation dataloader')
-    # parser.add_argument('--nb_epochs', type=int, default=100, help='Total number of epochs')
+    parser.add_argument('--nb_epochs', type=int, default=100, help='Total number of epochs')
     # parser.add_argument('--full', action='store_true', help='If want to validate each epoch')
 
     # # Learning Arguments
-    # parser.add_argument('--weight_decay', type=float, default=1e-4)
-    # parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--learning_rate', type=float, default=1e-3)
     # parser.add_argument('--scheduler', type=str, default="one")
-    # parser.add_argument('--val_freq', type=int, default=2)
+    parser.add_argument('--val_freq', type=int, default=2)
     # parser.add_argument('--dropout', type=float, default=0.05)
 
     # Dataset and Augmentations
@@ -382,7 +382,7 @@ if __name__ == '__main__':
     # Finetuning options
     parser.add_argument('--pretrained_exp', type=str, default=None, help='Name of pretrained experiment to load from')
     parser.add_argument('--resume', action='store_true', help='Resume training from pretrained model')    
-
+    parser.add_argument('--finetune', action='store_true', help='If finetuning, use SELD error as indicator, else use F-score')
     args = parser.parse_args()
 
     import sys

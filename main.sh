@@ -1,4 +1,4 @@
-GPU_ID=1
+GPU_ID=7
 
 # CUDA_VISIBLE_DEVICES=$GPU_ID python3 main.py  --ms --iv --gamma --itfm --exp "msic_itfm_synth_ss"
 
