@@ -10,7 +10,7 @@ Date: February 2025
 
 
 import numpy as np
-from utils import least_distance_between_gt_pred, jackknife_estimation, load_labels, organize_labels
+from utils.utils import least_distance_between_gt_pred, jackknife_estimation, load_labels, organize_labels
 import os
 import warnings
 
@@ -299,7 +299,7 @@ if __name__ == '__main__':
     # use this to test if the metrics class works as expected. All the classes will be called from the main.py for
     # actual use
     pred_output_files = 'outputs/SELD_fake_estimates/dev-test'  # Path of the DCASE output format files
-    from parameters import params
+    from src.parameters import params
     # Compute just the DCASE final results
     use_jackknife = False
     eval_dist = params['evaluate_distance'] if 'evaluate_distance' in params else False

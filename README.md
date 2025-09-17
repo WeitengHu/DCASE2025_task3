@@ -42,17 +42,17 @@ DCASE2025_SELD_dataset/
 Within this work, we use a set of perceptually-motivated input features, including Mid-Side (MS) spectrograms, Mid-Side Intensity Vector (IV), and the Magnitude-Squared Coherence (MSC) between the stereo channels. 
 
 ## Data Augmentation
-First, we propose ACS method to swap the left and right channels. You can use `left_right_swap.py` for this purpose.
+First, we propose ACS method to swap the left and right channels. You can use `src/augment/left_right_swap.py` for this purpose.
 
-We provide other data augmentation techniques in `training_utils.py`, including ITFM, Frequence Shifting and FilterAugment.
+We provide other data augmentation techniques in `src/training_utils.py`, including ITFM, Frequence Shifting and FilterAugment.
 
 ## Getting Start
-All parameters are stored in `parameters.py`, and you can change them for your own experiments.
+All parameters are stored in `src/parameters.py`, and you can change them for your own experiments.
 
-To train a model yourself, setup  `parameters.py` and `main.sh`, and then directly run
+To train a model yourself, setup  `src/parameters.py` and `scripts/main.sh`, and then directly run
 
 ```bash
-bash main.sh
+bash scripts/main.sh
 ```
 
 To set up `main.sh`, for example:
@@ -68,7 +68,7 @@ python3 main.py --ms --iv --gamma --compfreq --itfm --exp "experiment_name"
 
 Please feel free to add/remove the arguments as necessary. 
 
-To compare the results of your experiments, directly run `python track_results.py`.
+To compare the results of your experiments, directly run `python src/track_results.py`.
 
 ## References and Acknowledgement
 This repository is based on the [DCASE 2025 Yeow NTU Result](https://github.com/itsjunwei/NTU_SNTL_Task3)

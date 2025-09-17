@@ -10,21 +10,21 @@ import os.path
 import torch
 import wandb
 from parameters import params
-from model import SELDModel
-from loss import SELDLossADPIT, SELDLossSingleACCDOA
-from metrics import ComputeSELDResults
-from data_generator import DataGenerator
+from models.model import SELDModel
+from losses.loss import SELDLossADPIT, SELDLossSingleACCDOA
+from metrics.metrics import ComputeSELDResults
+from data.data_generator import DataGenerator
 from torch.utils.data import DataLoader
-from extract_features import SELDFeatureExtractor
-import utils
+from data.extract_features import SELDFeatureExtractor
+import utils.utils as utils
 from rich.progress import Progress
 import platform
 import time
-import training_utils as tu
+import augment.training_utils as tu
 import argparse
 import numpy as np
 import os
-from cal_dist_norm import calculate_distance_normalization_params
+from data.cal_dist_norm import calculate_distance_normalization_params
 
 def setup_model_and_loss(in_feat_shape, device):
     """

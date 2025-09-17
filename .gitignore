@@ -1,9 +1,9 @@
 # 核心忽略规则
 __pycache__/             # Python 字节码缓存
-**/__pycache__          # 覆盖所有层级目录
+**/__pycache__/          # 覆盖所有层级目录
 
 checkpoints/             # 训练模型保存点
-**/checkpoints           # 任何位置的同名文件夹
+**/checkpoints/          # 任何位置的同名文件夹
 
 logs/                    # 日志文件目录
 **/logs
@@ -24,7 +24,9 @@ wandb/                   # Weights & Biases 实验跟踪数据
 .vscode/                 # VSCode 配置
 .DS_Store                # macOS 系统文件
 Thumbs.db                # Windows 缩略图缓存
-
+*.pth
+*.pkl
+*.py[cod]
 # 临时/生成文件
 *.log
 *.tmp
