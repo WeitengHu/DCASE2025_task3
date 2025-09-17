@@ -1,10 +1,11 @@
 # 核心忽略规则
 __pycache__/             # Python 字节码缓存
-**/__pycache__/          # 覆盖所有层级目录
+**/__pycache__          # 覆盖所有层级目录
+__pycache__
 
 checkpoints/             # 训练模型保存点
-**/checkpoints/          # 任何位置的同名文件夹
-
+**/checkpoints          # 任何位置的同名文件夹
+checkpoints
 logs/                    # 日志文件目录
 **/logs
 
