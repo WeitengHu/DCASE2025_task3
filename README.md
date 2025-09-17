@@ -16,7 +16,7 @@ Official Dataset of DCASE 2025 Task 3 can be found at [here](https://zenodo.org/
 
 Optionally, you can use additional synthetic dataset.  You can utilize the publicly released [DCASE 2024 simulated dataset](https://zenodo.org/records/10932241) or use [SpatialScaper](https://github.com/iranroman/SpatialScaper) to generate addtional FOA format data. Then, you can transfer the FOA audio to stereo audio through [stereo SELD data generator](https://github.com/SonyResearch/dcase2025_stereo_seld_data_generator)
 
-Additionally, we applied channel swapping onto the real recordings. You can use `left_right_swap.py` for this purpose.
+Additionally, we applied channel swapping onto the real recordings. You can use `src/augment/left_right_swap.py` for this purpose.
 
 The directory structure should be:
 
