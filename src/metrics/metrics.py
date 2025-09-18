@@ -294,6 +294,72 @@ class ComputeSELDResults(object):
         else:
             return (F, AngE, DistE, RelDistE, OnscreenAq, classwise_results)
 
+    # def get_SELD_Results_from_memory(self, predictions_dict, is_jackknife=False):
+    #     """
+    #     直接从内存中的预测数据计算SELD指标，避免文件I/O
+        
+    #     Args:
+    #         predictions_dict: {filename: prediction_data} 格式的预测数据
+    #         is_jackknife: 是否计算Jackknife置信区间
+        
+    #     Returns:
+    #         tuple: (F, AngE, DistE, RelDistE, OnscreenAq, classwise_test_scr)
+    #     """
+        
+    #     eval = SELDMetrics(doa_threshold=self._doa_thresh, req_onscreen=self._req_onscreen,
+    #                     dist_threshold=self._dist_thresh, reldist_threshold=self._reldist_thresh,
+    #                     nb_classes=self._nb_classes, average=self._average)
+        
+    #     pred_labels_dict = {}
+    #     pred_files = list(predictions_dict.keys())
+        
+    #     for pred_file in pred_files:
+    #         # 直接从内存中的数据组织标签
+    #         pred_dict = predictions_dict[pred_file]
+    #         nb_pred_frames = max(list(pred_dict.keys())) if len(pred_dict) > 0 else 0
+    #         nb_ref_frames = self._ref_labels[pred_file][1]
+    #         pred_labels = organize_labels(pred_dict, max(nb_pred_frames, nb_ref_frames))
+            
+    #         # 计算分数
+    #         eval.update_seld_scores(pred_labels, self._ref_labels[pred_file][0])
+    #         if is_jackknife:
+    #             pred_labels_dict[pred_file] = pred_labels
+        
+    #     # 整体SED和DOA分数
+    #     F, AngE, DistE, RelDistE, OnscreenAq, classwise_results = eval.compute_seld_scores()
+        
+    #     if is_jackknife:
+    #         global_values = [F, AngE, DistE, RelDistE, OnscreenAq]
+    #         if len(classwise_results):
+    #             global_values.extend(classwise_results.reshape(-1).tolist())
+    #         partial_estimates = []
+            
+    #         # 使用留一法计算部分估计
+    #         for leave_file in pred_files:
+    #             leave_one_out_list = pred_files[:]
+    #             leave_one_out_list.remove(leave_file)
+    #             eval = SELDMetrics(doa_threshold=self._doa_thresh, req_onscreen=self._req_onscreen,
+    #                             dist_threshold=self._dist_thresh, reldist_threshold=self._reldist_thresh,
+    #                             nb_classes=self._nb_classes, average=self._average)
+    #             for pred_file in leave_one_out_list:
+    #                 eval.update_seld_scores(pred_labels_dict[pred_file], self._ref_labels[pred_file][0])
+    #             F_jack, AngE_jack, DistE_jack, RelDistE_jack, OnscreenAq_jack, classwise_results_jack = eval.compute_seld_scores()
+    #             leave_one_out_est = [F_jack, AngE_jack, DistE_jack, RelDistE_jack, OnscreenAq_jack]
+    #             if len(classwise_results_jack):
+    #                 leave_one_out_est.extend(classwise_results_jack.reshape(-1).tolist())
+    #             partial_estimates.append(leave_one_out_est)
+            
+    #         partial_estimates = np.array(partial_estimates)
+            
+    #         from utils.utils import jackknife_estimation
+    #         # 计算Jackknife统计
+    #         estimate, bias, std_err, conf_interval = jackknife_estimation(
+    #             global_values, partial_estimates, significance_level=0.05
+    #         )
+            
+    #         return F, AngE, DistE, RelDistE, OnscreenAq, classwise_results
+        
+    #     return F, AngE, DistE, RelDistE, OnscreenAq, classwise_results
 
 if __name__ == '__main__':
     # use this to test if the metrics class works as expected. All the classes will be called from the main.py for

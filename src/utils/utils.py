@@ -1050,3 +1050,298 @@ def format_elapsed_time(elapsed: float) -> str:
     minutes = int((elapsed % 3600) // 60)
     seconds = elapsed % 60
     return f"{hours}h {minutes}min {seconds:.2f}s"
+
+
+# def logits_to_prediction_dict(logits, params, filelist):
+#     """
+#     将logits转换为预测字典格式，但保存在内存中而不是文件
+    
+#     Returns:
+#         dict: {filename: prediction_dict} 格式的预测数据
+#     """
+#     predictions = {}
+    
+#     if not params['multiACCDOA']:
+#         sed, dummy_src_id, x, y, dist, onscreen = get_accdoa_labels(logits, params['nb_classes'], params['modality'], params=params)
+#         for i in range(sed.size(0)):
+#             sed_i, dummy_src_id_i, x_i, y_i, dist_i, onscreen_i = sed[i].cpu().numpy(), dummy_src_id[i].cpu().numpy(), x[i].cpu().numpy(), y[i].cpu().numpy(), dist[i].cpu().numpy(), onscreen[i].cpu().numpy()
+#             output_dict = get_output_dict_format_single_accdoa(sed_i, dummy_src_id_i, x_i, y_i, dist_i, onscreen_i, convert_to_polar=True)
+#             filename = os.path.basename(filelist[i])[:-3] + '.csv'
+#             predictions[filename] = output_dict
+#     else:
+#         start = time.time()
+#         (sed0, dummy_src_id0, doa0, dist0, on_screen0,
+#          sed1, dummy_src_id1, doa1, dist1, on_screen1,
+#          sed2, dummy_src_id2, doa2, dist2, on_screen2) = get_multiaccdoa_labels(logits, params['nb_classes'], params['modality'], dnorm=params['dnorm'], params=params)
+#         end = time.time()-start
+#         print(f"MultiACCDOA label extraction time: {end:.1f}s")
+#         for i in range(sed0.size(0)):
+#             sed0_i, dummy_src_id0_i, doa0_i, dist0_i, on_screen0_i = sed0[i].cpu().numpy(), dummy_src_id0[i].cpu().numpy(), doa0[i].cpu().numpy(), dist0[i].cpu().numpy(), on_screen0[i].cpu().numpy()
+#             sed1_i, dummy_src_id1_i, doa1_i, dist1_i, on_screen1_i = sed1[i].cpu().numpy(), dummy_src_id1[i].cpu().numpy(), doa1[i].cpu().numpy(), dist1[i].cpu().numpy(), on_screen1[i].cpu().numpy()
+#             sed2_i, dummy_src_id2_i, doa2_i, dist2_i, on_screen2_i = sed2[i].cpu().numpy(), dummy_src_id2[i].cpu().numpy(), doa2[i].cpu().numpy(), dist2[i].cpu().numpy(), on_screen2[i].cpu().numpy()
+
+#             output_dict = get_output_dict_format_multi_accdoa(sed0_i, dummy_src_id0_i, doa0_i, dist0_i, on_screen0_i,
+#                                                               sed1_i, dummy_src_id1_i, doa1_i, dist1_i, on_screen1_i,
+#                                                               sed2_i, dummy_src_id2_i, doa2_i, dist2_i, on_screen2_i, params['thresh_unify'], params['nb_classes'], convert_to_polar=True)
+#             filename = os.path.basename(filelist[i])[:-3] + '.csv'
+#             predictions[filename] = output_dict
+            
+#     return predictions
+
+# def logits_to_prediction_dict_with_profiling(logits, params, filelist):
+#     """
+#     带有详细时间分析的预测字典转换函数
+#     """
+#     import time
+#     predictions = {}
+    
+#     timing_stats = {
+#         'total_time': 0,
+#         'label_extraction': 0,
+#         'cpu_transfer': 0,
+#         'format_conversion': 0,
+#         'polar_conversion': 0,
+#         'file_processing': 0
+#     }
+    
+#     start_total = time.time()
+    
+#     if not params['multiACCDOA']:
+#         # Single ACCDOA 分析
+#         start_extraction = time.time()
+#         sed, dummy_src_id, x, y, dist, onscreen = get_accdoa_labels(logits, params['nb_classes'], params['modality'], params=params)
+#         timing_stats['label_extraction'] = time.time() - start_extraction
+        
+#         for i in range(sed.size(0)):
+#             start_cpu = time.time()
+#             sed_i, dummy_src_id_i, x_i, y_i, dist_i, onscreen_i = sed[i].cpu().numpy(), dummy_src_id[i].cpu().numpy(), x[i].cpu().numpy(), y[i].cpu().numpy(), dist[i].cpu().numpy(), onscreen[i].cpu().numpy()
+#             timing_stats['cpu_transfer'] += time.time() - start_cpu
+            
+#             start_format = time.time()
+#             output_dict = get_output_dict_format_single_accdoa(sed_i, dummy_src_id_i, x_i, y_i, dist_i, onscreen_i, convert_to_polar=True)
+#             timing_stats['format_conversion'] += time.time() - start_format
+            
+#             filename = os.path.basename(filelist[i])[:-3] + '.csv'
+#             predictions[filename] = output_dict
+            
+#     else:
+#         # Multi ACCDOA 详细分析
+#         print("开始 Multi-ACCDOA 详细性能分析...")
+        
+#         start_extraction = time.time()
+#         (sed0, dummy_src_id0, doa0, dist0, on_screen0,
+#          sed1, dummy_src_id1, doa1, dist1, on_screen1,
+#          sed2, dummy_src_id2, doa2, dist2, on_screen2) = get_multiaccdoa_labels(logits, params['nb_classes'], params['modality'], dnorm=params['dnorm'], params=params)
+#         timing_stats['label_extraction'] = time.time() - start_extraction
+#         print(f"标签提取时间: {format_elapsed_time(timing_stats['label_extraction'])}")
+        
+#         batch_size = sed0.size(0)
+#         print(f"处理 {batch_size} 个样本...")
+        
+#         for i in range(batch_size):
+#             if i % 10 == 0:  # 每10个样本打印一次进度
+#                 print(f"处理进度: {i}/{batch_size}")
+            
+#             # CPU转移时间分析
+#             start_cpu = time.time()
+#             sed0_i = sed0[i].cpu().numpy()
+#             dummy_src_id0_i = dummy_src_id0[i].cpu().numpy()
+#             doa0_i = doa0[i].cpu().numpy()
+#             dist0_i = dist0[i].cpu().numpy()
+#             on_screen0_i = on_screen0[i].cpu().numpy()
+            
+#             sed1_i = sed1[i].cpu().numpy()
+#             dummy_src_id1_i = dummy_src_id1[i].cpu().numpy()
+#             doa1_i = doa1[i].cpu().numpy()
+#             dist1_i = dist1[i].cpu().numpy()
+#             on_screen1_i = on_screen1[i].cpu().numpy()
+            
+#             sed2_i = sed2[i].cpu().numpy()
+#             dummy_src_id2_i = dummy_src_id2[i].cpu().numpy()
+#             doa2_i = doa2[i].cpu().numpy()
+#             dist2_i = dist2[i].cpu().numpy()
+#             on_screen2_i = on_screen2[i].cpu().numpy()
+#             cpu_time = time.time() - start_cpu
+#             timing_stats['cpu_transfer'] += cpu_time
+            
+#             # 格式转换时间分析
+#             start_format = time.time()
+#             output_dict = analyze_get_output_dict_format_multi_accdoa_performance(sed0_i, dummy_src_id0_i, doa0_i, dist0_i, on_screen0_i,
+#                                                               sed1_i, dummy_src_id1_i, doa1_i, dist1_i, on_screen1_i,
+#                                                               sed2_i, dummy_src_id2_i, doa2_i, dist2_i, on_screen2_i, 
+#                                                               params['thresh_unify'], params['nb_classes'], convert_to_polar=True)
+#             format_time = time.time() - start_format
+#             timing_stats['format_conversion'] += format_time
+            
+#             # 如果某个样本特别慢，打印详细信息
+#             if format_time > 0.1:  # 如果单个样本超过100ms
+#                 print(f"样本 {i} 格式转换耗时: {format_time:.4f}s")
+            
+#             filename = os.path.basename(filelist[i])[:-3] + '.csv'
+#             predictions[filename] = output_dict
+    
+#     timing_stats['total_time'] = time.time() - start_total
+    
+#     # 打印详细的时间分析报告
+#     print("\n=== logits_to_prediction_dict 性能分析报告 ===")
+#     print(f"总耗时: {format_elapsed_time(timing_stats['total_time'])}")
+#     print(f"标签提取: {format_elapsed_time(timing_stats['label_extraction'])} ({timing_stats['label_extraction']/timing_stats['total_time']*100:.1f}%)")
+#     print(f"CPU转移: {format_elapsed_time(timing_stats['cpu_transfer'])} ({timing_stats['cpu_transfer']/timing_stats['total_time']*100:.1f}%)")
+#     print(f"格式转换: {format_elapsed_time(timing_stats['format_conversion'])} ({timing_stats['format_conversion']/timing_stats['total_time']*100:.1f}%)")
+#     print(f"平均每样本CPU转移时间: {timing_stats['cpu_transfer']/len(filelist)*1000:.2f}ms")
+#     print(f"平均每样本格式转换时间: {timing_stats['format_conversion']/len(filelist)*1000:.2f}ms")
+#     print("=" * 50)
+    
+#     return predictions
+
+# def analyze_get_output_dict_format_multi_accdoa_performance(sed0_i, dummy_src_id0_i, doa0_i, dist0_i, on_screen0_i,
+#                                                            sed1_i, dummy_src_id1_i, doa1_i, dist1_i, on_screen1_i,
+#                                                            sed2_i, dummy_src_id2_i, doa2_i, dist2_i, on_screen2_i,
+#                                                            thresh_unify, nb_classes, convert_to_polar=True):
+#     """
+#     分析 get_output_dict_format_multi_accdoa 函数的性能瓶颈
+#     """
+#     import time
+    
+#     timing_stats = {
+#         'similarity_detection': 0,
+#         'coordinate_distance': 0,
+#         'output_dict_construction': 0,
+#         'polar_conversion': 0
+#     }
+    
+#     start_total = time.time()
+#     output_dict = {}
+    
+#     for frame_cnt in range(sed0_i.shape[0]):
+#         for class_cnt in range(sed0_i.shape[1]):
+#             # 测量相似性检测时间
+#             start_sim = time.time()
+#             flag_0sim1 = determine_similar_location(sed0_i[frame_cnt][class_cnt], sed1_i[frame_cnt][class_cnt], 
+#                                                    doa0_i[frame_cnt], doa1_i[frame_cnt], class_cnt, thresh_unify, nb_classes)
+#             flag_1sim2 = determine_similar_location(sed1_i[frame_cnt][class_cnt], sed2_i[frame_cnt][class_cnt], 
+#                                                    doa1_i[frame_cnt], doa2_i[frame_cnt], class_cnt, thresh_unify, nb_classes)
+#             flag_2sim0 = determine_similar_location(sed2_i[frame_cnt][class_cnt], sed0_i[frame_cnt][class_cnt], 
+#                                                    doa2_i[frame_cnt], doa0_i[frame_cnt], class_cnt, thresh_unify, nb_classes)
+#             timing_stats['similarity_detection'] += time.time() - start_sim
+            
+#             # 测量输出字典构建时间
+#             start_construct = time.time()
+#             # ... 原有的条件判断和字典构建逻辑 ...
+#              # unify or not unify according to flag
+#             if flag_0sim1 + flag_1sim2 + flag_2sim0 == 0:
+#                 if sed0_i[frame_cnt][class_cnt] > 0.5:
+#                     if frame_cnt not in output_dict:
+#                         output_dict[frame_cnt] = []
+#                     output_dict[frame_cnt].append([class_cnt,
+#                                                    dummy_src_id0_i[frame_cnt][class_cnt],
+#                                                    doa0_i[frame_cnt][class_cnt],
+#                                                    doa0_i[frame_cnt][class_cnt + nb_classes],
+#                                                    dist0_i[frame_cnt][class_cnt],
+#                                                    on_screen0_i[frame_cnt][class_cnt]])
+
+#                 if sed1_i[frame_cnt][class_cnt] > 0.5:
+#                     if frame_cnt not in output_dict:
+#                         output_dict[frame_cnt] = []
+#                     output_dict[frame_cnt].append([class_cnt,
+#                                                    dummy_src_id1_i[frame_cnt][class_cnt],
+#                                                    doa1_i[frame_cnt][class_cnt],
+#                                                    doa1_i[frame_cnt][class_cnt + nb_classes],
+#                                                    dist1_i[frame_cnt][class_cnt],
+#                                                    on_screen1_i[frame_cnt][class_cnt]])
+
+#                 if sed2_i[frame_cnt][class_cnt] > 0.5:
+#                     if frame_cnt not in output_dict:
+#                         output_dict[frame_cnt] = []
+#                     output_dict[frame_cnt].append([class_cnt,
+#                                                    dummy_src_id2_i[frame_cnt][class_cnt],
+#                                                    doa2_i[frame_cnt][class_cnt],
+#                                                    doa2_i[frame_cnt][class_cnt + nb_classes],
+#                                                    dist2_i[frame_cnt][class_cnt],
+#                                                    on_screen2_i[frame_cnt][class_cnt]])
+
+#             elif flag_0sim1 + flag_1sim2 + flag_2sim0 == 1:
+#                 if frame_cnt not in output_dict:
+#                     output_dict[frame_cnt] = []
+#                 if flag_0sim1:
+#                     if sed2_i[frame_cnt][class_cnt] > 0.5:
+#                         output_dict[frame_cnt].append([class_cnt,
+#                                                        dummy_src_id2_i[frame_cnt][class_cnt],
+#                                                        doa2_i[frame_cnt][class_cnt],
+#                                                        doa2_i[frame_cnt][class_cnt + nb_classes],
+#                                                        dist2_i[frame_cnt][class_cnt],
+#                                                        on_screen2_i[frame_cnt][class_cnt]])
+
+#                     doa_pred_fc = (doa0_i[frame_cnt] + doa1_i[frame_cnt]) / 2
+#                     dist_pred_fc = (dist0_i[frame_cnt] + dist1_i[frame_cnt]) / 2
+#                     on_screen_pred_fc = on_screen0_i[frame_cnt]  # TODO: How to choose
+#                     dummy_src_id_pred_fc = dummy_src_id0_i[frame_cnt]
+#                     output_dict[frame_cnt].append(
+#                         [class_cnt, dummy_src_id_pred_fc[class_cnt], doa_pred_fc[class_cnt], doa_pred_fc[class_cnt + nb_classes],dist_pred_fc[class_cnt], on_screen_pred_fc[class_cnt]])
+
+#                 elif flag_1sim2:
+#                     if sed0_i[frame_cnt][class_cnt] > 0.5:
+#                         output_dict[frame_cnt].append([class_cnt,
+#                                                        dummy_src_id0_i[frame_cnt][class_cnt],
+#                                                        doa0_i[frame_cnt][class_cnt],
+#                                                        doa0_i[frame_cnt][class_cnt + nb_classes],
+#                                                        dist0_i[frame_cnt][class_cnt],
+#                                                        on_screen0_i[frame_cnt][class_cnt]])
+
+#                     doa_pred_fc = (doa1_i[frame_cnt] + doa2_i[frame_cnt]) / 2
+#                     dist_pred_fc = (dist1_i[frame_cnt] + dist2_i[frame_cnt]) / 2
+#                     on_screen_pred_fc = on_screen1_i[frame_cnt]  # TODO: How to choose
+#                     dummy_src_id_pred_fc = dummy_src_id1_i[frame_cnt]
+
+#                     output_dict[frame_cnt].append(
+#                         [class_cnt, dummy_src_id_pred_fc[class_cnt], doa_pred_fc[class_cnt],
+#                          doa_pred_fc[class_cnt + nb_classes], dist_pred_fc[class_cnt], on_screen_pred_fc[class_cnt]])
+
+#                 elif flag_2sim0:
+#                     if sed1_i[frame_cnt][class_cnt] > 0.5:
+#                         output_dict[frame_cnt].append([class_cnt,
+#                                                        dummy_src_id1_i[frame_cnt][class_cnt],
+#                                                        doa1_i[frame_cnt][class_cnt],
+#                                                        doa1_i[frame_cnt][class_cnt + nb_classes],
+#                                                        dist1_i[frame_cnt][class_cnt],
+#                                                        on_screen1_i[frame_cnt][class_cnt]])
+
+#                     doa_pred_fc = (doa2_i[frame_cnt] + doa0_i[frame_cnt]) / 2
+#                     dist_pred_fc = (dist2_i[frame_cnt] + dist0_i[frame_cnt]) / 2
+#                     on_screen_pred_fc = on_screen2_i[frame_cnt]  # TODO: How to choose
+#                     dummy_src_id_pred_fc = dummy_src_id2_i[frame_cnt]
+
+#                     output_dict[frame_cnt].append(
+#                         [class_cnt, dummy_src_id_pred_fc[class_cnt], doa_pred_fc[class_cnt],
+#                          doa_pred_fc[class_cnt + nb_classes], dist_pred_fc[class_cnt], on_screen_pred_fc[class_cnt]])
+
+#             elif flag_0sim1 + flag_1sim2 + flag_2sim0 >= 2:
+#                 if frame_cnt not in output_dict:
+#                     output_dict[frame_cnt] = []
+#                 doa_pred_fc = (doa0_i[frame_cnt] + doa1_i[frame_cnt] + doa2_i[frame_cnt]) / 3
+#                 dist_pred_fc = (dist0_i[frame_cnt] + dist1_i[frame_cnt] + dist2_i[frame_cnt]) / 3
+
+#                 dummy_src_id_pred_fc = dummy_src_id0_i[frame_cnt]
+#                 on_screen_pred_fc = on_screen0_i[frame_cnt]  # TODO: How to do this?
+
+#                 output_dict[frame_cnt].append(
+#                     [class_cnt, dummy_src_id_pred_fc[class_cnt], doa_pred_fc[class_cnt], doa_pred_fc[class_cnt + nb_classes], dist_pred_fc[class_cnt], on_screen_pred_fc[class_cnt]])
+
+
+#             # (这里省略了具体实现，因为代码较长)
+#             timing_stats['output_dict_construction'] += time.time() - start_construct
+    
+#     # 测量极坐标转换时间
+#     start_polar = time.time()
+#     if True:  # convert_to_polar
+#         output_dict = convert_cartesian_to_polar(output_dict)
+#     timing_stats['polar_conversion'] = time.time() - start_polar
+    
+#     total_time = time.time() - start_total
+    
+#     print(f"\nget_output_dict_format_multi_accdoa 性能分析:")
+#     print(f"相似性检测: {timing_stats['similarity_detection']*1000:.2f}ms ({timing_stats['similarity_detection']/total_time*100:.1f}%)")
+#     print(f"输出字典构建: {timing_stats['output_dict_construction']*1000:.2f}ms ({timing_stats['output_dict_construction']/total_time*100:.1f}%)")
+#     print(f"极坐标转换: {timing_stats['polar_conversion']*1000:.2f}ms ({timing_stats['polar_conversion']/total_time*100:.1f}%)")
+    
+#     return output_dict

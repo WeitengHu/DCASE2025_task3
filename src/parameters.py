@@ -15,8 +15,8 @@ params = {
     'net_type': 'SELDnet',
 
     # data params
-    'root_dir': '/mnt/hwt/DCASE2025',  # parent directory containing the audio, video and labels directory
-    'feat_dir': '/mnt/hwt/DCASE2025/mel64_dnorm',  # store extracted features here
+    'root_dir': './DCASE2025_2',  # parent directory containing the audio, video and labels directory
+    'feat_dir': './DCASE2025_2/mel64_dnorm',  # store extracted features here
 
     'log_dir': 'logs',  # save all logs here like loss and metrics
     'checkpoints_dir': 'checkpoints',  # save trained model checkpoints and config

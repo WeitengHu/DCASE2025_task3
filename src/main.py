@@ -100,37 +100,63 @@ def train_epoch(seld_model, dev_train_iterator, optimizer, seld_loss, step_sched
     return float(np.mean(batch_losses))
 
 
-def val_epoch(seld_model, dev_test_iterator, seld_loss, seld_metrics, output_dir, is_jackknife=False):
+def val_epoch(seld_model, dev_test_iterator, seld_loss, seld_metrics, output_dir, is_jackknife=False):# , save_predictions=True
 
     seld_model.eval()
     val_loss_per_epoch = 0  # Track loss per iteration to average over the epoch.
-
+    # # 收集所有预测结果，而不是立即写文件
+    # all_logits = []
+    # all_label_files = []
+    # write_time = 0
+    # inference_time = 0
     with Progress(transient=True) as progress:
         task = progress.add_task("[green]Validation:\t", total=len(dev_test_iterator))
         with torch.no_grad():
+            
             for j, (input_features, labels) in enumerate(dev_test_iterator):
                 input_features, labels = input_features.to(device), labels.to(device)
-
+                # inf_start = time.time()
                 # Forward pass
                 logits = seld_model(input_features)
 
                 # Compute loss
                 loss = seld_loss(logits, labels)
+                # inference_time += time.time() - inf_start
                 val_loss_per_epoch += loss.item()
 
                 # save predictions to csv files for metric calculations
                 start = j * params['val_batch_size']
                 end = start + logits.size(0)
+                # write_start = time.time()
                 utils.write_logits_to_dcase_format(logits, params, output_dir, dev_test_iterator.dataset.label_files[start: end])
+                # write_time = write_time + time.time() - write_start
                 progress.update(task, advance=1)
-
+                # # 收集预测结果（移到CPU以节省GPU内存）
+                # start = j * params['val_batch_size']
+                # end = start + logits.size(0)
+                # all_logits.append(logits.cpu())
+                # all_label_files.extend(dev_test_iterator.dataset.label_files[start:end])
+                
+                # progress.update(task, advance=1)
+    #  # 批量写入文件（一次性操作）
+    # all_logits = torch.cat(all_logits, dim=0)
+    # if save_predictions: # 是否保存output
+    #     utils.write_logits_to_dcase_format(all_logits, params, output_dir, all_label_files)
+    #     metric_scores = seld_metrics.get_SELD_Results(pred_files_path=os.path.join(output_dir, 'dev-test'), is_jackknife=is_jackknife)
+    # else:
+    #     # 直接从内存计算指标（新方式）
+    #     predictions_dict = utils.logits_to_prediction_dict(all_logits, params, all_label_files)
+    #     metric_scores = seld_metrics.get_SELD_Results_from_memory(predictions_dict, is_jackknife=is_jackknife)
     # Clear up memory
     del input_features, labels, logits
     torch.cuda.empty_cache()
-
+    # metric_start = time.time()
     avg_val_loss = val_loss_per_epoch / len(dev_test_iterator)
     metric_scores = seld_metrics.get_SELD_Results(pred_files_path=os.path.join(output_dir, 'dev-test'), is_jackknife=is_jackknife)
-
+    # metric_time = time.time() - metric_start
+    # print(f"  Metrics:   {metric_time:.1f}s ")
+    # print(f"  File I/O:  {write_time:.1f}s ")
+    # print(f"  Inference: {inference_time:.1f}s ")
     return avg_val_loss, metric_scores
 
 
@@ -282,6 +308,15 @@ def main(device, args):
             should_validate = (is_regular_validation_time or is_final_phase or is_full_training_midway)
             if should_validate:
                 val_start_time = time.time()
+
+                # # 决定何时保存预测文件
+                # save_files = (
+                #     epoch >= params['nb_epochs'] - 1 #or  # 最后5个epoch总是保存
+                #     # epoch % (params['val_freq'] * 5) == 0 #or  # 每隔一段时间保存
+                #     # (epoch / params['nb_epochs']) > 0.8  # 训练后期总是保存
+                # )
+
+                # avg_val_loss, metric_scores = val_epoch(seld_model, dev_test_iterator, seld_loss, seld_metrics, output_dir,save_predictions=save_files)
                 avg_val_loss, metric_scores = val_epoch(seld_model, dev_test_iterator, seld_loss, seld_metrics, output_dir)
                 val_f, val_ang_error, val_dist_error, val_rel_dist_error, val_onscreen_acc, class_wise_scr = metric_scores
                 val_seld_error = ((1 - val_f) + (val_ang_error / 180) + val_rel_dist_error)/3 

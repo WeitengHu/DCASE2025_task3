@@ -98,8 +98,8 @@ def process_directory(root_dir, final_audio_folder, final_meta_folder):
 
 def main():
     # Define the upper directories for stereo audio and metadata
-    stereo_dir = "/mnt/hwt/DCASE2025/stereo_dev"
-    metadata_dir = "/mnt/hwt/DCASE2025/metadata_dev"
+    stereo_dir = "./DCASE2025/stereo_dev"
+    metadata_dir = "./DCASE2025/metadata_dev"
 
     # Define the output directories for the swapped files (under a new folder 'dev-train-realcs')
     final_audio_folder = os.path.join(stereo_dir, "dev-train-realcs")
