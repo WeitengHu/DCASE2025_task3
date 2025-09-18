@@ -74,7 +74,7 @@ python3 main.py --ms --iv --gamma --itfm --exp "experiment_name"
 
 
 ### 微调
-You can modify parameters in `scripts/finetune.sh`. Please ensure the input features are the same as `scripts/main.sh`.
+First, you should modify parameters in `scripts/finetune.sh`. Please ensure the input features are the same as `scripts/main.sh`.
 
 `--pretrained_exp` is your model file name of your pretrained model saved in `./checkpoints`. Run
 ```
