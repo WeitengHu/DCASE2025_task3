@@ -53,7 +53,7 @@ You can also add your own synthetic datasets. The directory structure should be:
 │   ├── dev-test-sony/*.csv
 ```
 
-### 预训练
+### 训练
 run
 ```
 bash scripts/main.sh
@@ -73,7 +73,7 @@ python3 main.py --ms --iv --gamma --itfm --exp "experiment_name"
 
 
 
-### 微调
+### 微调(可选)
 First, you should modify parameters in `scripts/finetune.sh`. Please ensure the input features are the same as `scripts/main.sh`.
 
 `--pretrained_exp` is your model file name of your pretrained model saved in `./checkpoints`. Run
