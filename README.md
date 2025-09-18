@@ -11,17 +11,32 @@ conda activate dcase2025_task3
 pip install -r requirements.txt
 ```
 
-## Dataset
-Official Dataset of DCASE 2025 Task 3 can be found at [here](https://zenodo.org/records/15559774).
+## Quick Start
+### 下载数据集
+run
+```
+bash scripts/download.sh
+```
+to download DCASE2025 official dataset to `./DCASE2025` .
 
-Optionally, you can use additional synthetic dataset.  You can utilize the publicly released [DCASE 2024 simulated dataset](https://zenodo.org/records/10932241) or use [SpatialScaper](https://github.com/iranroman/SpatialScaper) to generate addtional FOA format data. Then, you can transfer the FOA audio to stereo audio through [stereo SELD data generator](https://github.com/SonyResearch/dcase2025_stereo_seld_data_generator)
+### 解压
+run 
+```
+bash scripts/unzip.sh
+```
+to unzip the zip files and delete the original zip files
 
-Additionally, we applied channel swapping onto the real recordings. You can use `src/augment/left_right_swap.py` for this purpose.
+### 预处理（可选）
+run
+```
+bash scripts/left_right_swap.sh
+```
+to swap the left and right channel for dataset.
 
-The directory structure should be:
+You can also add your own synthetic datasets. The directory structure should be:
 
 ```bash
-DCASE2025_SELD_dataset/
+./DCASE2025/
 ├── stereo_dev/
 │   ├── dev-train-tau/*.wav
 │   ├── dev-train-sony/*.wav
@@ -38,37 +53,38 @@ DCASE2025_SELD_dataset/
 │   ├── dev-test-sony/*.csv
 ```
 
-## Feature
-Within this work, we use a set of perceptually-motivated input features, including Mid-Side (MS) spectrograms, Mid-Side Intensity Vector (IV), and the Magnitude-Squared Coherence (MSC) between the stereo channels. 
-
-## Data Augmentation
-First, we propose ACS method to swap the left and right channels. You can use `src/augment/left_right_swap.py` for this purpose.
-
-We provide other data augmentation techniques in `src/training_utils.py`, including ITFM, Frequence Shifting and FilterAugment.
-
-## Getting Start
-All parameters are stored in `src/parameters.py`, and you can change them for your own experiments.
-
-To train a model yourself, setup  `src/parameters.py` and `scripts/main.sh`, and then directly run
-
-```bash
+### 预训练
+run
+```
 bash scripts/main.sh
 ```
+You can modify parameters in `scripts/main.sh` and `src/parameters.py`.
 
 To set up `main.sh`, for example:
 
 ```
-python3 main.py --ms --iv --gamma --compfreq --itfm --exp "experiment_name"
+python3 main.py --ms --iv --gamma --itfm --exp "experiment_name"
 ```
-`--ms --iv --gamma` means to use Mid-Side (MS) spectrograms, Mid-Side Intensity Vector (IV), and the Magnitude-Squared Coherence (MSC) respectively.
+`--ms --iv --gamma` means to use Mid-Side (MS) spectrograms, Mid-Side Intensity Vector (IV), and the Magnitude-Squared Coherence (MSC) respectively. You can add or remove the features as necessary.
 
-`--compfreq` means to use Frequence Shifting and FilterAugment. `--itfm` means to use ITFM (Inter-Channel-Aware Time-Frequency Masking).
+`--compfreq` means to use Frequence Shifting and FilterAugment. `--itfm` means to use ITFM (Inter-Channel-Aware Time-Frequency Masking). Please feel free to add/remove the arguments as necessary. 
 
 `--exp` is for your name of the experiment.
 
-Please feel free to add/remove the arguments as necessary. 
 
-To compare the results of your experiments, directly run `python src/track_results.py`.
+
+### 微调
+You can modify parameters in `scripts/finetune.sh`. Please ensure the input features are the same as `scripts/main.sh`.
+
+`--pretrained_exp` is your model file name of your pretrained model saved in `./checkpoints`. Run
+```
+bash scripts/finetune.sh
+```
+
+### 比较结果
+To compare the results of your experiments, directly run 
+```bash scripts/compare.sh```.
+
 
 ## References and Acknowledgement
 This repository is based on the [DCASE 2025 Yeow NTU Result](https://github.com/itsjunwei/NTU_SNTL_Task3)

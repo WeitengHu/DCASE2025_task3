@@ -7,6 +7,7 @@ CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py --exp "Finetune_baseline" \
                --nb_epochs 20 \
                --finetune \
                --val_freq 1 \
+               # --itfm --ms --iv --gamma
 
 
                
