@@ -12,11 +12,14 @@ params = {
 
     # choose task
     'modality': 'audio',  # 'audio' or 'audio_visual'
-    'net_type': 'SELDnet',
-
+    # 'net_type': 'resnetconformer',#'SELDnet',
+    # 'net_type': 'seldnet',#'SELDnet', 被exp这个参数覆盖了
     # data params
-    'root_dir': './DCASE2025',  # parent directory containing the audio, video and labels directory
-    'feat_dir': './DCASE2025/mel64_dnorm',  # store extracted features here
+    # 'root_dir': './DCASE2025',  # parent directory containing the audio, video and labels directory
+    # 'feat_dir': './DCASE2025/mel64_dnorm',  # store extracted features here
+
+    'root_dir': '/mnt/hwt/DCASE2025_2',  # parent directory containing the audio, video and labels directory
+    # 'feat_dir': '/mnt/hwt/DCASE2025_2/mel64_dnorm',  # store extracted features here
 
     'log_dir': 'logs',  # save all logs here like loss and metrics
     'checkpoints_dir': 'checkpoints',  # save trained model checkpoints and config
@@ -33,7 +36,8 @@ params = {
     'resnet_feature_size': 49,  # (7,7) feature_map for every frame from resnet
 
     # model params
-    'model': 'seldnet',  # Model to use
+    # 'model':'resnetconformer' ,#'seldnet',  # Model to use
+    'model':'seldnet',
     'nb_conv_blocks': 3,
     'nb_conv_filters': 64,
     'f_pool_size': [4, 4, 2],
@@ -73,7 +77,7 @@ params = {
     # folds for training, testing
     'dev_train_folds': ['fold1','fold2','fold3', 'fold5', 'fold6'],  # 'fold1,2' is the synthetic training data of DCASE2024. You can skip that if you do not use the synthetic data to train.
     # 'dev_train_folds': ['fold3'], # for finetune
-    # 'dev_train_folds': ['fold3', 'fold5', 'fold6'], # fold5 for spatial scaper synth
+    # 'dev_train_folds': ['fold3', 'fold5', 'fold6'], # fold5 for spatial scaper synth, fold6 for swap audio
     'dev_test_folds': ['fold4'], # for test
 
     # validation params

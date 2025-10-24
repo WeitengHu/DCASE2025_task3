@@ -25,7 +25,7 @@ import argparse
 import numpy as np
 import os
 from data.cal_dist_norm import calculate_distance_normalization_params
-
+from models.ResConformer import ResConformer
 def setup_model_and_loss(in_feat_shape, device):
     """
     Initializes the model, loss, and metrics.
@@ -34,6 +34,9 @@ def setup_model_and_loss(in_feat_shape, device):
     if "seldnet" in model_name:
         model = SELDModel(params=params, in_feat_shape=in_feat_shape).to(device)
         print(f"Using SELDNet!")
+    elif "resnetconformer" in model_name:
+        model = ResConformer(params=params, in_feat_shape=in_feat_shape).to(device)
+        print(f"Using ResNetConformer!")
     else:
         raise ValueError("Unknown model type specified.")
 
@@ -185,7 +188,7 @@ def main(device, args):
                   ("_ipd" if params['ipd'] else "") + ("_iv" if params['iv'] else "") + ("_slite" if params['slite'] else "") + \
                   ("_ms" if params['ms'] else "") + ("_dnorm" if params['dnorm'] else "") 
     params['feat_dir'] = os.path.join(params['root_dir'], feat_folder)
-
+    print(f"Feature directory: {params['feat_dir']}")
     # Set up feature extractor and preprocessing
     feature_extractor = SELDFeatureExtractor(params)
     feature_extractor.extract_features(split='dev')
@@ -331,7 +334,8 @@ def main(device, args):
                            "Metric/Val_3D_SELD_Error": val_seld_error}, step=epoch)
 
             # ------------- Save model if validation f score improves -------------#
-            indicator = (val_seld_error <= best_seld_err) if params['finetune'] else (should_validate and val_f >= best_f_score)  
+            # indicator = (val_seld_error <= best_seld_err) if params['finetune'] else (should_validate and val_f >= best_f_score)  
+            indicator = (should_validate and val_f >= best_f_score)  
             if indicator:
                 best_f_score = val_f
                 best_epoch = epoch
@@ -350,6 +354,7 @@ def main(device, args):
                 f"LE: {val_ang_error:.2f} | "
                 f"DE: {val_dist_error:.2f} | "
                 f"RDE: {val_rel_dist_error:.3f} | "
+                f"SELD Error: {val_seld_error:.3f} | "
                 f"Best: {best_epoch + 1} ({best_f_score * 100:.2f})"
             )
 

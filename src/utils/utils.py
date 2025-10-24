@@ -1021,7 +1021,11 @@ def print_results(f, ang_error, dist_error, rel_dist_error, onscreen_acc, class_
         rel_dist_error[0] if use_jackknife else rel_dist_error,
         '[{:0.3f}, {:0.3f}]'.format(rel_dist_error[1][0], rel_dist_error[1][1]) if use_jackknife else ''
     ))
-
+    val_seld_error = ((1 - f) + (ang_error / 180) + rel_dist_error)/3
+    print('SELD error: {:0.3f} {}'.format(
+        val_seld_error[0] if use_jackknife else val_seld_error,
+        '[{:0.3f}, {:0.3f}]'.format(val_seld_error[1][0], val_seld_error[1][1]) if use_jackknife else ''
+    ))
 
     if params['average'] == 'macro':
         print('Class-wise results on unseen data:')

@@ -1,10 +1,10 @@
-GPU_ID=7
+GPU_ID=1
 
 # CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --ms --iv --gamma --itfm --exp "msic_itfm_synth_ss"
 
 # CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --ms --iv --compfreq --exp "msi_fafs_synth_ss"
 
-CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "baseline_no_synth"
+CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "seldnet"
 
 # CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --ms --iv --gamma --compfreq --exp "msic_fafs_synth_ss"
 

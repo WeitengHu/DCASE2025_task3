@@ -37,3 +37,5 @@ Thumbs.db                # Windows 缩略图缓存
 
 main2.py
 README2.md
+__init__.py
+results/
