@@ -13,7 +13,7 @@ for exp in track(os.listdir("checkpoints"), description="Scanning experiments"):
         continue
 
     # Load metrics
-    ckpt = torch.load(ckpt_file, map_location="cpu")
+    ckpt = torch.load(ckpt_file, map_location="cpu", weights_only=False)
     f1  = ckpt.get("best_f_score",         float("nan"))
     ang = ckpt.get("best_ang_err",         float("nan"))
     rde = ckpt.get("best_rel_dist_err",    float("nan"))
