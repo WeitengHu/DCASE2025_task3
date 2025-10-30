@@ -7,8 +7,8 @@ from rich.progress import track
 TOP_N = 20
 
 rows = []
-for exp in track(os.listdir("checkpoints"), description="Scanning experiments"):
-    ckpt_file = os.path.join("checkpoints", exp, "best_model.pth")
+for exp in track(os.listdir("checkpoints/mini42"), description="Scanning experiments"):
+    ckpt_file = os.path.join("checkpoints/mini42", exp, "best_model.pth")
     if not os.path.isfile(ckpt_file):
         continue
 

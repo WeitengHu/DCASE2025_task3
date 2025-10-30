@@ -9,7 +9,7 @@ Date: January 2025
 """
 
 params = {
-
+    'seed': 42,
     # choose task
     'modality': 'audio',  # 'audio' or 'audio_visual'
     # 'net_type': 'resnetconformer',#'SELDnet',
@@ -18,13 +18,13 @@ params = {
     # 'root_dir': './DCASE2025',  # parent directory containing the audio, video and labels directory
     # 'feat_dir': './DCASE2025/mel64_dnorm',  # store extracted features here
 
-    'root_dir': '/mnt/hwt/DCASE2025_2',  # parent directory containing the audio, video and labels directory
+    'root_dir': '/mnt/hwt/DCASE2025',  # parent directory containing the audio, video and labels directory
     # 'feat_dir': '/mnt/hwt/DCASE2025_2/mel64_dnorm',  # store extracted features here
 
-    'log_dir': 'logs',  # save all logs here like loss and metrics
-    'checkpoints_dir': 'checkpoints',  # save trained model checkpoints and config
-    'output_dir': 'outputs',  # save the predicted files here.
-
+    'log_dir': 'DCASE2025feature/logs',  # save all logs here like loss and metrics
+    'checkpoints_dir': 'DCASE2025feature/checkpoints',  # save trained model checkpoints and config
+    'output_dir': 'DCASE2025feature/outputs',  # save the predicted files here.
+    'wandb_dir': 'DCASE2025feature/wandb',  # wandb logs
     # audio feature extraction params
     'sampling_rate': 24000,
     'hop_length_s': 0.0125,
@@ -36,8 +36,8 @@ params = {
     'resnet_feature_size': 49,  # (7,7) feature_map for every frame from resnet
 
     # model params
-    # 'model':'resnetconformer' ,#'seldnet',  # Model to use
-    'model':'seldnet',
+    'model':'resnetconformer' ,#'seldnet',  # Model to use
+    # 'model':'seldnet',
     'nb_conv_blocks': 3,
     'nb_conv_filters': 64,
     'f_pool_size': [4, 4, 2],
@@ -97,7 +97,7 @@ params = {
                                           # CAUTION: Too slow to use jackknife
 
     # Distance Normalization Variables
-    'dnorm': True,
+    'dnorm': False,
 
     # If True, fine-tune the model on fold3 only (for dev_test)
     'finetune': False,  

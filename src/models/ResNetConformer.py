@@ -23,7 +23,7 @@ import torch.nn as nn
 from models.ResNet.resnet import ResNet, resnet18
 from models.conformer.encoder import ConformerBlocks
 from models.AvgMaxPooling import AvgMaxPooling2d
-class ResConformer(nn.Module):
+class ResNetConformer(nn.Module):
     def __init__(
             self,params, in_feat_shape,
             encoder_dim=256,
@@ -34,7 +34,7 @@ class ResConformer(nn.Module):
             out_dim=117, # multiACCDOA格式的输出维度
              # 输入通道数，立体声为2
     ):
-        super(ResConformer, self).__init__()
+        super(ResNetConformer, self).__init__()
         # 初始化ResNet部分
         self.resnet = resnet18(include_top=False, base_channels=24,in_channels=in_feat_shape[1])  # 输入通道数为2（立体声）
         self.resnet_out_dim = self.resnet.out_dim  # resnet18的输出维度
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     test_video_feat = torch.rand([8, 50, 7, 7])
     # test_video_feat = None  # set to none for audio modality
 
-    test_model = ResConformer()
+    test_model = ResNetConformer()
     doa = test_model(test_audio_feat)
     print(doa.size())
     # print(test_model)

@@ -67,8 +67,7 @@ def load_audio(audio_file, sampling_rate):
 
 def extract_stereo_features(audio, sr: int = 24000, n_fft: int = 512, hop_length: int = 300, win_length: int = 512, 
                             nb_mels: int = 64, max_freq: int = 2000, use_gamma: bool = False, use_ipd: bool = False, 
-                            use_iv: bool = False, use_slite: bool = False, use_ms: bool = False, use_ild: bool = False,
-                            use_ildnorm: bool = False, use_gcc: bool = False):
+                            use_iv: bool = False, use_slite: bool = False, use_ms: bool = False, use_ild: bool = False):
     """
     Extract stereo audio features. Mel spectrograms are always extracted.
     Optional interaural features include ILDs, coherence (gamma), and IPDs.
@@ -178,7 +177,7 @@ def extract_stereo_features(audio, sr: int = 24000, n_fft: int = 512, hop_length
 
     # Compute inter-channel phase differences between left and right channels
     if use_ipd:
-        ipds = compute_ipd_features(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels, fmax=max_freq)
+        ipds = compute_ipd_features(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels, max_freq=max_freq)
         mel_specs = np.concatenate((mel_specs, ipds), axis=0)
 
     # Compute SALSA-Lite (Normalized Interchannel Phase Differences)
@@ -187,19 +186,8 @@ def extract_stereo_features(audio, sr: int = 24000, n_fft: int = 512, hop_length
         mel_specs = np.concatenate((mel_specs, salsalite), axis=0)
 
     if use_ild:
-        ilds = compute_ild_features(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels, fmax=max_freq)
-        ilds = np.expand_dims(ilds, axis=0)
+        ilds = compute_ild_features(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels, max_freq=max_freq)
         mel_specs = np.concatenate((mel_specs, ilds), axis=0)
-
-    if use_ildnorm:
-        ildnorms = compute_norm_ild_features(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels, fmax=max_freq)
-        ildnorms = np.expand_dims(ildnorms, axis=0)
-        mel_specs = np.concatenate((mel_specs, ildnorms), axis=0)
-
-    if use_gcc:
-        gccphat = compute_gcc_phat(stfts, sr=sr, n_fft=n_fft, nb_mels=nb_mels)
-        gccphat = np.expand_dims(gccphat, axis=0)
-        mel_specs = np.concatenate((mel_specs, gccphat), axis=0)
 
     if nb_mels == 0:
         mel_specs = np.dot(mel_specs, W.T)
@@ -359,7 +347,7 @@ def compute_salsa_slite(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int =
 
 
 
-def compute_ipd_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64, fmax: int = 2000):
+def compute_ipd_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64, max_freq: int = 2000):
     """
     Compute the interchannel phase differences (IPDs) for a binaural (stereo) audio signal 
     and represent them via their sine and cosine.
@@ -381,29 +369,32 @@ def compute_ipd_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int 
     stft_left = stfts[0]
     stft_right = stfts[1]
 
-    # If fmax is specified, zero out frequency bins above this threshold.
-    if fmax is not None:
+    # If max_freq is specified, zero out frequency bins above this threshold.
+    if max_freq is not None:
         # Get the frequencies corresponding to the STFT bins
         freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
-        # Create a boolean mask for bins above fmax
-        mask = freqs > fmax
+        # Create a boolean mask for bins above max_freq
+        mask = freqs > max_freq
         # Set the corresponding columns to zero in both representations
         stft_left[:, mask] = 0
         stft_right[:, mask] = 0
 
+    if nb_mels:
+        mel_filter_bank = librosa.filters.mel(sr=sr, n_fft=n_fft, n_mels=nb_mels, fmin=50) # (nb_mels, frequency_bins)
+
+        stft_left = np.dot(stft_left, mel_filter_bank.T)
+        stft_right = np.dot(stft_right, mel_filter_bank.T)
+
+    # Compute the IPD
     ipd = np.angle(stft_left) - np.angle(stft_right)
+
+    # Compute sine and cosine of IPD
     ipd_sin = np.sin(ipd)
     ipd_cos = np.cos(ipd)
 
-    if nb_mels:
-        mel_filter_bank = librosa.filters.mel(sr=sr, n_fft=n_fft, n_mels=nb_mels, fmin=50) # (nb_mels, frequency_bins)
-
-        ipd_sin = np.dot(ipd_sin, mel_filter_bank.T)
-        ipd_cos = np.dot(ipd_cos, mel_filter_bank.T)
-
     return np.stack((ipd_sin, ipd_cos), axis=0)     # (2, T, F)
 
-def compute_ild_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64, fmax: int = 2000):
+def compute_ild_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64, max_freq: int = 2000):
     """
     Compute the interaural level differences (ILDs) for a binaural (stereo) audio signal.
 
@@ -415,113 +406,29 @@ def compute_ild_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int 
         stfts (ndarray): STFT of the binaural signal with shape (2, T, F).
         sr (int): Sampling rate in Hz. Default is 24000.
         n_fft (int): Number of FFT points for the STFT. Default is 512.
-        nb_mels (int): If provided, convert the ILD from linear frequency scale to mel scale using this many mel bands. Default is 64.  
-
+        nb_mels (int): If provided, convert the ILD from linear frequency scale to mel scale using this many mel bands. Default is 64.
     Returns:
         ild_features (ndarray): ILD feature, shape (T, F) or (T, nb_mels).
     """
     stft_left = stfts[0]
     stft_right = stfts[1]
-
-    # Compute power spectra
-    power_left = np.abs(stft_left) ** 2
-    power_right = np.abs(stft_right) ** 2
-
-    # Avoid division by zero
-    epsilon = 1e-8
-
-    ild = (power_left + epsilon) / (power_right + epsilon)  # (T, F)
-
-    # if fmax is not None:
-    #     # Get the frequencies corresponding to the STFT bins
-    #     freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
-    #     # Create a boolean mask for bins above fmax
-    #     mask = freqs > fmax
-    #     # Set the corresponding columns to one (log10(1) = 0) in ild
-    #     ild[:, mask] = 1.0
-
+        # If max_freq is specified, zero out frequency bins above this threshold.
+    if max_freq is not None:
+        # Get the frequencies corresponding to the STFT bins
+        freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
+        # Create a boolean mask for bins above max_freq
+        mask = freqs > max_freq
+        # Set the corresponding columns to zero in both representations
+        stft_left[:, mask] = 0
+        stft_right[:, mask] = 0
     if nb_mels:
         mel_filter_bank = librosa.filters.mel(sr=sr, n_fft=n_fft, n_mels=nb_mels, fmin=50) # (nb_mels, frequency_bins)
-        ild = np.dot(ild, mel_filter_bank.T)
-    ild = np.log10(ild)
-    return ild  # (T, F) or (T, nb_mels)
 
-def compute_norm_ild_features(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64, clip_db: float = 40.0, fmax: int = 2000):
-    """
-    Compute the interaural level differences (ILDs) for a binaural (stereo) audio signal.
+        stft_left = np.dot(stft_left, mel_filter_bank.T)
+        stft_right = np.dot(stft_right, mel_filter_bank.T)
+    ild = 10 * np.log10((np.abs(stft_left) ** 2 + 1e-8) / (np.abs(stft_right) ** 2 + 1e-8))
+    return ild     # (T, F) or (T, nb_mels)
 
-    For a stereo signal with channels [0, 1], the ILD is defined as:
-        ``ILD(f) = 10 * log10( |left(f)|^2 / |right(f)|^2 )``
-    where 'left' and 'right' are the STFT representations of the two channels.
-
-    Parameters:
-        stfts (ndarray): STFT of the binaural signal with shape (2, T, F).
-        sr (int): Sampling rate in Hz. Default is 24000.
-        n_fft (int): Number of FFT points for the STFT. Default is 512.
-        nb_mels (int): If provided, convert the ILD from linear frequency scale to mel scale using this many mel bands. Default is 64.  
-
-    Returns:
-        ild_features (ndarray): ILD feature, shape (T, F) or (T, nb_mels).
-    """
-    stft_left = stfts[0]
-    stft_right = stfts[1]
-
-    # Compute power spectra
-    power_left = np.abs(stft_left) ** 2
-    power_right = np.abs(stft_right) ** 2
-
-    # Avoid division by zero
-    epsilon = 1e-8
-
-    ild = 10 * np.log10((power_left + epsilon) / (power_right + epsilon))  # (T, F)
-    # if fmax is not None:
-    #     # Get the frequencies corresponding to the STFT bins
-    #     freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
-    #     # Create a boolean mask for bins above fmax
-    #     mask = freqs > fmax
-    #     # Set the corresponding columns to one (log10(1) = 0) in ild
-    #     ild[:, mask] = 1.0
-    ild = np.clip(ild, -clip_db, clip_db) / clip_db  # Normalize to [-1, 1]
-    if nb_mels:
-        mel_filter_bank = librosa.filters.mel(sr=sr, n_fft=n_fft, n_mels=nb_mels, fmin=50) # (nb_mels, frequency_bins)
-        ild = np.dot(ild, mel_filter_bank.T)
-
-    return ild  # (T, F) or (T, nb_mels)
-
-def compute_gcc_phat(stfts, sr: int = 24000, n_fft: int = 512, nb_mels: int = 64,max_tau: int = None):
-    """
-    Compute the Generalized Cross-Correlation with Phase Transform (GCC-PHAT)
-    between the two channels of a binaural (stereo) audio signal.
-
-    Parameters:
-        stfts (ndarray): STFT of the binaural signal with shape (2, T, F).
-        sr (int): Sampling rate in Hz. Default is 24000.
-        n_fft (int): Number of FFT points for the STFT. Default is 512.
-        nb_mels (int): If provided, convert the GCC-PHAT from linear frequency scale to mel scale using this many mel bands. Default is 64.
-        max_tau (int): Maximum time lag (in samples) to consider. If None, uses the full range.
-
-    Returns:
-        gcc_phat_features (ndarray): GCC-PHAT feature, shape (T, 2*max_tau + 1) or (T, nb_mels).
-    """
-    stft_left = stfts[0]
-    stft_right = stfts[1]
-
-    # Compute cross-power spectrum
-    cross_power = stft_left * np.conj(stft_right)  # (T, F)
-
-    # Apply PHAT weighting
-    cross_power_phat = cross_power / (np.abs(cross_power) + 1e-8)
-
-    # Compute inverse FFT to get GCC-PHAT
-    gcc_phat = np.fft.irfft(cross_power_phat, n=n_fft, axis=1)  # (T, n_fft)
-
-    if max_tau is not None:
-        gcc_phat = gcc_phat[:, :max_tau + 1]  # Keep only positive lags
-
-    if nb_mels:
-        gcc_phat = np.concatenate((gcc_phat[:, -nb_mels//2:], gcc_phat[:, :nb_mels//2]), axis=-1)
-
-    return gcc_phat  # (T, 2*max_tau + 1) or (T, nb_mels)
 
 
 def load_labels(label_file, convert_to_cartesian=True):

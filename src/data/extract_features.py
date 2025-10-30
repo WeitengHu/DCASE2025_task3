@@ -97,7 +97,8 @@ class SELDFeatureExtractor():
                 audio, sr = utils.load_audio(audio_file, self.sampling_rate)
                 audio_feat = utils.extract_stereo_features(audio, sr=sr, n_fft=self.n_fft, hop_length=self.hop_length, win_length=self.win_length, 
                                                            nb_mels=self.nb_mels, max_freq=self.max_freq, use_gamma=self.params['gamma'], use_ipd=self.params['ipd'], 
-                                                           use_iv=self.params['iv'], use_slite=self.params['slite'], use_ms=self.params['ms'])
+                                                           use_iv=self.params['iv'], use_slite=self.params['slite'], use_ms=self.params['ms'], use_ild=self.params['ild'],
+                                                           use_ildnorm=self.params['ildnorm'], use_gcc=self.params['gcc'])
 
                 # Convert to tensor and save
                 audio_feat = torch.tensor(audio_feat, dtype=torch.float32)
