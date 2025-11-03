@@ -47,13 +47,27 @@ class ResNetConformer(nn.Module):
         # 初始化Conformer部分
         self.conformer_blocks = ConformerBlocks(encoder_dim=encoder_dim,num_layers=num_layers)
         # self.time_pooling = AvgMaxPooling2d(kernel_size=(time_pool_size,1), stride=(time_pool_size,1))
+        self.dnorm = params['dnorm']
         self.fc = nn.Sequential(
             nn.Linear(encoder_dim, encoder_dim),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(dropout_p),
             nn.Linear(encoder_dim, out_dim),
-            nn.Tanh()
+            # nn.Tanh()
         )
+        self.doa_act = nn.Tanh()
+        self.dist_act = nn.Tanh() if self.dnorm == True else nn.ReLU()
+    def activation(self, x):
+        num_tracks = 3
+        num_elements = 3
+        num_classes = 13
+        B, T, D = x.shape
+        x_accdoa = x.reshape(B, T, num_tracks, num_elements, num_classes)
+        x_doa = self.doa_act(x_accdoa[:, :, :, 0:2, :])  # act*x, act*y
+        x_dist = self.dist_act(x_accdoa[:, :, :, 2:3, :])  # dist
+        x_activated = torch.cat([x_doa, x_dist], dim=3)  # concat along element dimension   
+        x_activated = x_activated.reshape(B, T, D)
+        return x_activated
 
     def forward(self, x):
         x = self.resnet(x)  # (B,C,T,F')ResNet部分提取特征，每个layer之后只进行frequency维度的pooling
@@ -76,6 +90,7 @@ class ResNetConformer(nn.Module):
         # x = x.squeeze(-1)  # (B, encoder_dim, T')
         # x = x.permute(0, 2, 1)  # (B, T', encoder_dim)
         x = self.fc(x)  # 最终分类层
+        x = self.activation(x)  # 特殊激活函数处理
         return x
     
 
