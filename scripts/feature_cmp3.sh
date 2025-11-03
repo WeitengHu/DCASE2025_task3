@@ -1,8 +1,9 @@
 GPU_ID=2
 
-CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_ms" \
+
+CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_ipd" \
                 --project 'task3_feature' \
-                --ms \
+                --ipd \
                 --nb_epochs 50 \
 
 CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_gcc" \
@@ -10,12 +11,3 @@ CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_gcc" \
                 --gcc \
                 --nb_epochs 50 \
 
-CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_slite" \
-                --project 'task3_feature' \
-                --slite \
-                --nb_epochs 50 \
-
-CUDA_VISIBLE_DEVICES=$GPU_ID python3 src/main.py  --exp "activate_ild" \
-                --project 'task3_feature' \
-                --ild \
-                --nb_epochs 50 \

@@ -213,7 +213,7 @@ def main(device, args):
     feat_folder = (f"mel{params['nb_mels']}" if params['nb_mels'] else "linspec") + ("_gamma" if params['gamma'] else "") + \
                   ("_ipd" if params['ipd'] else "") + ("_iv" if params['iv'] else "") + ("_slite" if params['slite'] else "") + \
                   ("_ms" if params['ms'] else "") + ("_ild" if params['ild'] else "")  + ("_ildnorm" if params['ildnorm'] else "") + \
-                  ("_gcc" if params['gcc'] else "") + ("_dnorm" if params['dnorm'] else "")
+                  ("_gcc" if params['gcc'] else "") + ("_stpacc" if params['stpacc'] else "") + ("_dnorm" if params['dnorm'] else "")
     params['feat_dir'] = os.path.join(params['root_dir'], feat_folder)
     print(f"Feature directory: {params['feat_dir']}")
     # Set up feature extractor and preprocessing
@@ -451,6 +451,7 @@ if __name__ == '__main__':
     parser.add_argument('--ild', action='store_true', help='Inter-channel Level Differences')
     parser.add_argument('--ildnorm', action='store_true', help='Inter-channel Level Differences Normalization')
     parser.add_argument('--gcc', action='store_true', help='Generalized Cross-Correlation')
+    parser.add_argument('--stpacc', action='store_true', help='Short-Term Power AutoCorrelation')
     parser.add_argument('--dnorm', action='store_true', help='Distance Normalization')
     parser.add_argument('--multiACCDOA', action='store_false')
     parser.set_defaults(dnorm=False, multiACCDOA=True) # Default always use DNorm and Multi-ACCDOA format
